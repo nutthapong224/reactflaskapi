@@ -106,32 +106,32 @@ The backend service includes a health check that:
 
 ### Start services
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 ### View logs
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f backend
+docker compose logs -f backend
 ```
 
 ### Stop services
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### Rebuild and restart
 ```bash
-docker-compose down
-docker-compose up --build -d
+docker compose down
+docker compose up --build -d
 ```
 
 ### Check service status
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 ## 🔍 Troubleshooting
