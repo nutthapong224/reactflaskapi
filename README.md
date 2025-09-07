@@ -1,107 +1,193 @@
+# Full-Stack Application with Docker Compose
 
-# Deploy Vite+ nodejs + MariaDB  with Docker Compose on Ubuntu 24.04
+A containerized full-stack application featuring React frontend, Flask backend, MongoDB database, and Cloudflare tunnel for secure external access.
 
-## รายละเอียดโปรเจกต์
-- ใช้ MariaDB (Bitnami) เป็นฐานข้อมูล  
-- ใช้ Vite react สำหรับจัดการฐานข้อมูลผ่านเว็บ  
-- ใช้ Node   
+## 🏗️ Architecture
 
+- **Frontend**: React application served on port 80
+- **Backend**: Flask API running on port 8000
+- **Database**: MongoDB 6.0 for data persistence
+- **Tunnel**: Cloudflare tunnel for secure external access
+- **Network**: Custom bridge network for inter-service communication
 
----
+## 📋 Prerequisites
 
-## ขั้นตอนติดตั้งและรันบน Ubuntu 24.04
-### 1. ssh เข้าไป ใน server ให้ ทำตัวเองอยู่ใน สิทธิ์ root แล้วกรอก password
-```bash
-sudo -i
+- Docker and Docker Compose installed
+- Cloudflare account with tunnel token (for external access)
+- Basic knowledge of Docker containers
+
+## 🚀 Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nutthapong224/reactflaskapi
+   cd reactflaskapi
+   ```
+
+2. **Set up environment variables**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_API_URL=http://localhost:8000
+   TUNNEL_TOKEN=your_cloudflare_tunnel_token_here
+   MONGO_INITDB_DATABASE=flaskdb
+   ```
+
+3. **Start the application**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Access the application**
+   - Frontend: http://localhost
+   - Backend API: http://localhost:8000
+   - Health check: http://localhost:8000/api/items
+
+## 📁 Project Structure
+
 ```
-### 2. ติดตั้ง Docker และ Docker Compose (ถ้ายังไม่ได้ติดตั้ง)
-
-```bash
-# ติดตั้ง dependencies
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg lsb-release
-
-# เพิ่ม Docker's official GPG key
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-# เพิ่ม repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# ติดตั้ง Docker Engine
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# เปิดใช้งาน
-sudo systemctl enable --now docker
-
-```
-
-ตรวจสอบเวอร์ชัน Docker และ Compose:
-
-```bash
-docker --v
-
-```
-
----
-
-### 3. clone project ลงมา 
-
-สมมติโฟลเดอร์โปรเจกต์ชื่อ `cloudfaretest2`
-
-```bash
-git clone https://github.com/nutthapong224/cloudfaretest2.git
-```
----
-### 4. เข้าไปยัง โปรเจค 
-```bash
- cd cloudfaretest2
-```
-### 4. เข้าไปยัง แก้ไฟล์ โปรเจค ให้ใช้คำสั่ง nano ในการแก้ไข
-```bash
- nano .env
-```
-### 4.1 ให้แก้ config  VITE_API_URL คือ api ที่ใช้ connect backend ตัวอย่างเช่น api 192.168.1.200 ให้เขียนว่า 192.168.1.200:5000/api ดังภาพที่ 1
-![](images/2025-08-11-20-12-11.png)
-
-### 4.2 FONTEND1,FONTEND2 คือการ อนุญาติ ให้ FRONTEND สามารถเข้าสู cors ได้เช่น   ดังภาพที่ 2
-![](images/2025-08-11-20-18-51.png)
-
-### 4.3 ให้ใส่ token ที่ได้ จาก cloduflare tunnel ลงใน .env ดังภาพที่3 เพื่อให้ใช้งาน cloudflare tunnel
-![](images/2025-08-11-20-15-35.png)
-### 4.3 เมื่อแก้ไขสำเร็จให้กด ctrl+s แล้วกด ctrl+x
-
-### 5. เราสามารถแก้ไข nginx.config เพื่อสามารถ รองรับการ host ของชื่อ domain ของเรา ได้ จาก folder frontendgame แล้ว nano เพื่อแก้ไข
-
-```bash
-cd frontendgame
-```
-```bash
-nano nginx.conf
-```
-### ให้แก้ บรรทัดนี้ เป็นชื่อ โดเมนที่เราต้องการที่จะใช้งาน
-![](images/2025-08-11-20-22-58.png)
-### เมื่อแก้ไขสำเร็จให้กด ctrl+s แล้วกด ctrl+x
-
-### 5. รัน Docker Compose
-
-```bash
-docker compose up -d --build
+project/
+├── docker-compose.yml
+├── .env
+├── frontend-react/
+│   ├── Dockerfile
+│   └── ... (React app files)
+├── backend/
+│   ├── Dockerfile
+│   └── ... (Flask app files)
+└── mongo-init/
+    └── ... (MongoDB initialization scripts)
 ```
 
-คำสั่งนี้จะดาวน์โหลดอิมเมจที่จำเป็น สร้าง container และรันใน background
+## 🐳 Services Overview
 
----
+### Frontend React (`frontend-react`)
+- **Port**: 80
+- **Build Context**: `./frontend-react`
+- **Environment**: Uses `VITE_API_URL` from .env file
+- **Dependencies**: Backend service
 
-### 6. ตรวจสอบสถานะ container
+### Backend Flask (`backend`)
+- **Port**: 8000
+- **Build Context**: `./backend`
+- **Container Name**: `flask_api`
+- **Health Check**: Monitors `/api/items` endpoint
+- **Dependencies**: MongoDB service
 
+### MongoDB (`mongo_db`)
+- **Image**: mongo:6.0
+- **Container Name**: `mongo_db`
+- **Database**: `flaskdb` (initialized automatically)
+- **Volume**: Persistent storage with `mongo_data`
+- **Initialization**: Scripts from `./mongo-init` directory
+
+### Cloudflare Tunnel (`cloudflared`)
+- **Image**: cloudflare/cloudflared:latest
+- **Purpose**: Secure external access without port forwarding
+- **Token**: Set via `TUNNEL_TOKEN` environment variable
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | Frontend API endpoint URL | `http://localhost:8000` |
+| `TUNNEL_TOKEN` | Cloudflare tunnel token | `your_tunnel_token_here` |
+| `MONGO_INITDB_DATABASE` | MongoDB initial database name | `flaskdb` |
+
+### Health Checks
+
+The backend service includes a health check that:
+- Tests the `/api/items` endpoint every 30 seconds
+- Times out after 10 seconds
+- Retries up to 3 times before marking as unhealthy
+
+## 📝 Common Commands
+
+### Start services
 ```bash
-docker compose ps
+docker-compose up -d
 ```
 
-### 7. การหยุดและลบ container
-
+### View logs
 ```bash
-docker compose down
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
 ```
+
+### Stop services
+```bash
+docker-compose down
+```
+
+### Rebuild and restart
+```bash
+docker-compose down
+docker-compose up --build -d
+```
+
+### Check service status
+```bash
+docker-compose ps
+```
+
+## 🔍 Troubleshooting
+
+### Backend Health Check Failing
+- Verify the Flask app is serving on `/api/items`
+- Check if MongoDB connection is working
+- Review backend logs: `docker-compose logs backend`
+
+### Frontend Can't Connect to Backend
+- Ensure `VITE_API_URL` points to correct backend URL
+- Verify backend service is running and healthy
+- Check network connectivity between containers
+
+### MongoDB Connection Issues
+- Confirm MongoDB container is running
+- Check if initialization scripts executed properly
+- Verify database credentials and connection string
+
+### Cloudflare Tunnel Not Working
+- Validate `TUNNEL_TOKEN` in .env file
+- Check Cloudflare dashboard for tunnel status
+- Review cloudflared logs: `docker-compose logs cloudflared`
+
+## 🛠️ Development
+
+### Local Development Setup
+1. Ensure all services are running with `docker-compose up -d`
+2. Frontend hot-reload should work automatically
+3. Backend changes require container rebuild: `docker-compose up --build backend`
+
+### Database Management
+- MongoDB data persists in the `mongo_data` Docker volume
+- Initialization scripts in `./mongo-init/` run only on first container creation
+- To reset database: `docker-compose down -v` (⚠️ This deletes all data)
+
+### Network Communication
+All services communicate through the `flaskapi_network` bridge network, allowing:
+- Frontend to call backend APIs
+- Backend to connect to MongoDB
+- Cloudflare tunnel to proxy requests
+
+## 📚 Additional Resources
+
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Cloudflare Tunnel Setup](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- [MongoDB Docker Hub](https://hub.docker.com/_/mongo)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
