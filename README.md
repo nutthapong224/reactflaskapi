@@ -63,7 +63,7 @@ project/
 ### Frontend React (`frontend-react`)
 - **Port**: 80
 - **Build Context**: `./frontend-react`
-- **Build Context**: `./frontend-react/nginx.conf` make https in the file
+- **https and reverse proxy**: `./frontend-react/nginx.conf` make https in the file
 - **Environment**: Uses `VITE_API_URL` from .env file
 - **Dependencies**: Backend service
 
