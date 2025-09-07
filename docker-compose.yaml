@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  frontend-react:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    networks:
+      - flaskapi_network
+
+  backend:
+    build: ./backend
+    container_name: flask_api
+    env_file: 
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo_db
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/items"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+    networks:
+      - flaskapi_network
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: always
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - frontend-react
+      - backend
+    networks:
+      - flaskapi_network
+
+  mongo_db:
+    image: mongo:6.0
+    container_name: mongo_db
+    environment:
+      - MONGO_INITDB_DATABASE=flaskdb
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    restart: always
+    networks:
+      - flaskapi_network
+
+volumes:
+  mongo_data:
+
+networks:
+  flaskapi_network:
+    driver: bridge
